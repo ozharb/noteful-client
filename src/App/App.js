@@ -8,6 +8,7 @@ import NotePageMain from '../NotePageMain/NotePageMain';
 import dummyStore from '../dummy-store';
 import {getNotesForFolder, findNote, findFolder} from '../notes-helpers';
 import './App.css';
+import NotesContext from '../NotesContext';
 
 class App extends Component {
     state = {
@@ -54,7 +55,7 @@ class App extends Component {
     }
 
     renderMainRoutes() {
-        const {notes, folders} = this.state;
+        const {notes} = this.state;
         return (
             <>
                 {['/', '/folder/:folderId'].map(path => (
@@ -90,7 +91,13 @@ class App extends Component {
     }
 
     render() {
+        const value = {
+            notes: this.state.notes,
+            folders: this.state.folders,
+            deleteNote: this.handleDeleteNote
+        };
         return (
+            <NotesContext.Provider value = {value}>
             <div className="App">
                 <nav className="App__nav">{this.renderNavRoutes()}</nav>
                 <header className="App__header">
@@ -101,6 +108,7 @@ class App extends Component {
                 </header>
                 <main className="App__main">{this.renderMainRoutes()}</main>
             </div>
+            </NotesContext.Provider>
         );
     }
 }

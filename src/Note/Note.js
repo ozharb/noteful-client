@@ -1,18 +1,58 @@
-import React from 'react'
+import React, {Component} from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import './Note.css'
+import NotesContext from '../NotesContext'
+import config from '../config'
 
-export default function Note(props) {
+
+//export default function Note(props) 
+class Note extends Component {
+  static defaultProps ={
+    onDeleteNote: () => {},
+  }
+static contextType = NotesContext;
+
+handleClickDelete = e => {
+  e.preventDefault()
+  const noteId = this.props.id
+console.log(noteId)
+  fetch(`${config.API_ENDPOINT}/notes/${noteId}`, {
+    method: 'DELETE',
+    headers: {
+      'content-type': 'application/json'
+    },
+  })
+    .then(res => {
+      if (!res.ok)
+        return res.json().then(e => Promise.reject(e))
+      return res.json()
+    })
+    .then(() => {
+      this.context.deleteNote(noteId)
+      // allow parent to perform extra behaviour
+      this.props.onDeleteNote(noteId)
+    })
+    .catch(error => {
+      console.error({ error })
+    })
+}
+
+
+render(){
+  const { name, id, modified } = this.props
   return (
     <div className='Note'>
       <h2 className='Note__title'>
-        <Link to={`/note/${props.id}`}>
-          {props.name}
+        <Link to={`/note/${id}`}>
+          {name}
         </Link>
       </h2>
-      <button className='Note__delete' type='button'>
+      <button className='Note__delete' 
+      type='button'
+      onClick={this.handleClickDelete}
+      >
         <FontAwesomeIcon icon='trash-alt' />
         {' '}
         remove
@@ -22,10 +62,13 @@ export default function Note(props) {
           Modified
           {' '}
           <span className='Date'>
-            {format(props.modified, 'Do MMM YYYY')}
+            {format(modified, 'Do MMM YYYY')}
           </span>
         </div>
       </div>
     </div>
   )
 }
+}
+
+export default Note
